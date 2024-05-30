@@ -3,6 +3,7 @@
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
+    "@types/semver": "^7.5.8",
     "bun-types": "latest"
   },
   "peerDependencies": {
@@ -10,7 +11,8 @@
   },
   "dependencies": {
     "@vercel/node": "^3.0.5",
-    "compare-versions": "^6.1.0"
+    "compare-versions": "^6.1.0",
+    "semver": "^7.6.2"
   },
   "scripts": {
     "postinstall": "chmod +x ./bin/*; cp sample.env .env; ./bin/generate.ts"

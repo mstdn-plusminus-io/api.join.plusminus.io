@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { readFile } from "fs/promises";
+import { readFile, readdir } from "fs/promises";
+import { compare } from "semver";
 import { resolve } from "path";
 
 const sendError = (response: VercelResponse) => {
@@ -11,16 +12,21 @@ export default async (request: VercelRequest, response: VercelResponse) => {
   console.log(request.headers, request.query);
 
   const version = request.query.version;
+  const versionDir = resolve(process.cwd(), "dist", "versions");
+
   if (!version) {
-    sendError(response);
+    const files = await readdir(versionDir, "utf8");
+    const versions = files.map((file) => file.replace(".json", ""));
+    const latest = versions.sort(compare).reverse()[0];
+    response.status(200).setHeader("Content-Type", "application/json").send(latest);
     return;
   }
 
-  const versionFile = resolve(process.cwd(), "dist", "versions", `${version}.json`);
+  const versionFile = resolve(versionDir, `${version}.json`);
   try {
     const versionJson = await readFile(versionFile, "utf8");
     response.status(200).setHeader("Content-Type", "application/json").send(versionJson);
-  } catch(e) {
+  } catch (e) {
     console.error(e);
 
     const json = { "updatesAvailable": [] };
