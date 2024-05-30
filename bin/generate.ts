@@ -19,6 +19,8 @@ const distDir = resolve(__dirname, "../dist");
 await rm(distDir, { recursive: true, force: true });
 const distVersionsDir = resolve(distDir, "versions");
 await mkdir(distVersionsDir, { recursive: true });
+const distLatestVersionsDir = resolve(distVersionsDir, "latest");
+await mkdir(distLatestVersionsDir, { recursive: true });
 
 const versionsDir = resolve(__dirname, "../versions");
 const files = await readdir(versionsDir, "utf8");
@@ -39,6 +41,7 @@ for (const file of files) {
     releaseNotes: `${process.env.RELEASE_NOTE_URL}${version}`
   });
 }
+const latestVersion = versions[versions.length - 1];
 
 console.log("updates:");
 for (const [index, version] of versions.entries()) {
@@ -51,6 +54,16 @@ for (const [index, version] of versions.entries()) {
   console.log(version.version, "->", updatesAvailable.map((update) => update.version).join(", ") || "-");
 
   const versionPath = resolve(distVersionsDir, `${version.version}.json`);
+  const body = JSON.stringify({ updatesAvailable });
+  await writeFile(versionPath, body, "utf8");
+}
+
+// latest
+{
+  const updatesAvailable = [latestVersion];
+  console.log("latest", "->", updatesAvailable.map((update) => update.version).join(", ") || "-");
+
+  const versionPath = resolve(distVersionsDir, "latest", "latest.json");
   const body = JSON.stringify({ updatesAvailable });
   await writeFile(versionPath, body, "utf8");
 }
